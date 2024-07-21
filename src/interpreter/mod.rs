@@ -29,10 +29,28 @@ impl ChipState {
             sound_timer: 0,
         }
     }
+
+    fn fetch(&mut self) -> u16 {
+        let instruction = u16::from_be_bytes([
+            self.memory[self.pc as usize],
+            self.memory[(self.pc + 1) as usize],
+        ]);
+
+        self.increment_pc();
+        instruction
+    }
+
+    fn increment_pc(&mut self) {
+        self.pc += 2;
+        // Reset PC to 0 when memory address 4096 is reached.
+        // This mask works as addr is 12-bit but PC is 16-bit.
+        self.pc &= 0x0FFF;
+    }
 }
 
 impl Interpreter for ChipState {
     fn step(&mut self, keys: &Keys) -> Option<Display> {
+        let opcode = self.fetch();
         None
     }
 
