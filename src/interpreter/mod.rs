@@ -1,5 +1,10 @@
+mod instruction;
+
 use chip8_base::{Display, Interpreter, Keys, Pixel};
+use instruction::Instruction;
 use std::time::Duration;
+
+// TODO: add log macros (task 2.3)
 
 pub struct ChipState {
     memory: [u8; 4096],
@@ -51,6 +56,10 @@ impl ChipState {
 impl Interpreter for ChipState {
     fn step(&mut self, keys: &Keys) -> Option<Display> {
         let opcode = self.fetch();
+        let instruction = Instruction::decode(opcode);
+
+        log::debug!("Executing instruction {:?}", instruction);
+
         None
     }
 
