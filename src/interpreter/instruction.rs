@@ -48,11 +48,12 @@ fn nibbles(n: u16) -> (u8, u8, u8, u8) {
     (n3, n2, n1, n0)
 }
 
+// TODO: use hex for all arms to stay consistent
 use Instruction::*;
 impl Instruction {
     pub fn decode(opcode: u16) -> Self {
-        let addr = opcode & 0x0fff;
-        let byte = (opcode & 0x00ff) as u8;
+        let addr = opcode & 0x0FFF;
+        let byte = (opcode & 0x00FF) as u8;
 
         match nibbles(opcode) {
             (0, 0, 0xE, 0xE) => Ret,
