@@ -35,7 +35,7 @@ impl Interpreter for ChipState {
     }
 
     fn buzzer_active(&self) -> bool {
-        false
+        self.sound_timer != 0
     }
 }
 
