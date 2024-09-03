@@ -15,8 +15,9 @@ pub struct ChipState {
     index: u16,
     pointer: u8,
     stack: [u16; 16],
-    speed: Duration,
     display: [[Pixel; 64]; 32],
+    speed: Duration,
+    ticker: Duration,
     delay_timer: u8,
     sound_timer: u8,
 }
@@ -25,6 +26,14 @@ impl Interpreter for ChipState {
     fn step(&mut self, keys: &Keys) -> Option<Display> {
         let opcode = self.fetch();
         let instruction = Instruction::decode(opcode);
+
+        // Handle timers
+        self.ticker = self.ticker.saturating_sub(self.speed());
+        if self.ticker == Duration::ZERO {
+            self.delay_timer -= 1;
+            self.sound_timer -= 1;
+            self.ticker = Duration::from_secs(1 / 60);
+        }
 
         log::debug!("Executing instruction {:?}", instruction);
         self.execute(instruction)
@@ -48,8 +57,9 @@ impl ChipState {
             index: 0,
             pointer: 0,
             stack: [0; 16],
-            speed: Duration::from_secs_f64(1_f64 / clock_freq as f64),
             display: [[Pixel::default(); 64]; 32],
+            speed: Duration::from_secs_f64(1_f64 / clock_freq as f64),
+            ticker: Duration::from_secs(1 / 60),
             delay_timer: 0,
             sound_timer: 0,
         }
