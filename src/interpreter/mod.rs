@@ -30,8 +30,8 @@ impl Interpreter for ChipState {
         // Handle timers
         self.ticker = self.ticker.saturating_sub(self.speed());
         if self.ticker == Duration::ZERO {
-            self.delay_timer -= 1;
-            self.sound_timer -= 1;
+            self.delay_timer = self.delay_timer.saturating_sub(1);
+            self.sound_timer = self.sound_timer.saturating_sub(1);
             self.ticker = Duration::from_secs(1 / 60);
         }
 
@@ -95,19 +95,44 @@ impl ChipState {
                 self.pointer -= 1;
             }
             Instruction::Jmp(addr) => self.pc = addr,
-            Instruction::Call(_) => todo!(),
-            Instruction::Ske(_, _) => todo!(),
-            Instruction::Skne(_, _) => todo!(),
-            Instruction::Skre(_, _) => todo!(),
+            Instruction::Call(addr) => {
+                self.pointer += 1;
+                self.stack[self.pointer as usize] = self.pc;
+                self.pc = addr;
+            }
+            Instruction::Ske(x, byte) => {
+                if self.registers[x as usize] == byte {
+                    self.increment_pc();
+                }
+            }
+            Instruction::Skne(x, byte) => {
+                if self.registers[x as usize] != byte {
+                    self.increment_pc();
+                }
+            }
+            Instruction::Skre(x, y) => {
+                if self.registers[x as usize] == self.registers[y as usize] {
+                    self.increment_pc();
+                }
+            }
             Instruction::Setr(x, byte) => self.registers[x as usize] = byte,
             Instruction::Addr(x, byte) => {
                 self.registers[x as usize] = self.registers[x as usize].wrapping_add(byte);
             }
-            Instruction::Move(_, _) => todo!(),
-            Instruction::Or(_, _) => todo!(),
+            Instruction::Move(x, y) => self.registers[x as usize] = self.registers[y as usize],
+            Instruction::Or(x, y) => self.registers[x as usize] |= self.registers[y as usize],
             Instruction::And(x, y) => self.registers[x as usize] &= self.registers[y as usize],
-            Instruction::Xor(_, _) => todo!(),
-            Instruction::Add(_, _) => todo!(),
+            Instruction::Xor(x, y) => self.registers[x as usize] ^= self.registers[y as usize],
+            Instruction::Add(x, y) => {
+                if let Some(value) =
+                    self.registers[x as usize].checked_add(self.registers[y as usize])
+                {
+                    self.registers[x as usize] = value;
+                    self.registers[0xF] = 0;
+                } else {
+                    self.registers[0xF] = 1;
+                }
+            }
             Instruction::Sub(_, _) => todo!(),
             Instruction::Shr(_, _) => todo!(),
             Instruction::Ssub(_, _) => todo!(),
