@@ -10,3 +10,4 @@ chip8_base = "0.2"
 clap = { version = "3.1.6", features = ["derive", "cargo"] }
 env_logger = "0.11.3"
 log = "0.4.22"
+rand = "0.8.5"
