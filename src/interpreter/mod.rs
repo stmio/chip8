@@ -34,7 +34,7 @@ impl Interpreter for ChipState {
         if self.ticker == Duration::ZERO {
             self.delay_timer = self.delay_timer.saturating_sub(1);
             self.sound_timer = self.sound_timer.saturating_sub(1);
-            self.ticker = Duration::from_secs(1 / 60);
+            self.ticker = Duration::from_nanos(16666667);
         }
 
         log::debug!("Executing instruction {:?}", instruction);
@@ -65,7 +65,7 @@ impl ChipState {
             stack: [0; 16],
             display: [[Pixel::default(); 64]; 32],
             speed: Duration::from_secs_f64(1_f64 / clock_freq as f64),
-            ticker: Duration::from_secs(1 / 60),
+            ticker: Duration::from_nanos(16666667),
             delay_timer: 0,
             sound_timer: 0,
         }
